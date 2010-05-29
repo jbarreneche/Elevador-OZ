@@ -1,4 +1,4 @@
-\insert 'Timer.oz'
 \insert 'Controller.oz'
+\insert 'Lift.oz'
 
-{Browse "Hello"}
+{Browse en(hola1)}
