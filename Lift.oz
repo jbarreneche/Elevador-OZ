@@ -5,7 +5,7 @@ declare Lift
 
 fun {Lift Num Init Cid Floors}
    {NewPortObject Init
-    fun {$ Msg state(Pos Sched Moving)}
+    fun {$ state(Pos Sched Moving) Msg}
        case Msg
        of call(N) then
 	  {Browse 'Lift '#Num#' needed at floor '#N}
