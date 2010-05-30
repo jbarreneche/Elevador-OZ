@@ -1,8 +1,23 @@
-declare EmptySchedule Reschedule
+declare EmptySchedule Reschedule RemoveFirst NextFrom
+
 fun {EmptySchedule}
    schedule(nil nil)
 end
 
+fun {RemoveFirst schedule(Up Down) Dir}
+   if Dir == up then schedule(Up.2 Down)
+   else schedule(Up Down.2) end
+end
+
+fun {NextFrom schedule(Up Down) Dir}
+   case if Dir == up then Up
+	else Down end
+   of nil then nil
+   [] H|T then H
+   end
+end
+   
+      
 fun {Reschedule schedule(Up Down) Current NewFloor}
    fun{Add Pred List Value}
       case List
@@ -26,3 +41,4 @@ end
 %    S2 = {Reschedule {Reschedule S1 3 6} 3 4}
 %    {Browse {Reschedule {Reschedule {Reschedule S2 3 7} 3 2} 3 2}}
 % end
+%{Browse up == up}
