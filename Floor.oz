@@ -1,8 +1,7 @@
 \insert 'Timer.oz'
 \insert 'NewPortObject.oz'
 
-fun {Floor Num Init Lifts}
-   Tid = {Timer}
+fun {Floor Num Init Lifts} Tid = {Timer} Fid in
    Fid = {NewPortObject Init
 	  fun {$ state(Called) Msg}
 	     case Called
@@ -17,9 +16,6 @@ fun {Floor Num Init Lifts}
 		   Lran = Lifts.(1+{OS.rand} mod {Width Lifts})
 		   {Send Lran call(Num)}
 		   state(called)
-		else
-  		   {Browse 'Mensaje invalido recibido :(..'}
-		   state(called)
 		end
 	     [] called then
 		case Msg
@@ -28,9 +24,6 @@ fun {Floor Num Init Lifts}
 		   {Send Tid starttimer(5000 Fid)}
 		   state(doorsopen(Ack))
 		[] call then
-		   state(called)
-  		else
-		   {Browse 'Mensaje invalido2 recibido :(..'}
 		   state(called)
 		end
 	     [] doorsopen(Ack) then
@@ -43,14 +36,8 @@ fun {Floor Num Init Lifts}
 		   A=Ack
 		   state(doorsopen(Ack))
 		[] call then
-  		   state(doorsopen(Ack))
-		else
-		   {Browse 'Mensaje invalido3 recibido :(..'}
-		   state(called)
+		   state(doorsopen(Ack))
 		end
-	     else
-		{Browse 'Mensaje invalido4 recibido :(..'}
-		state(called)
 	     end
 	  end}
-in Fid end
+end

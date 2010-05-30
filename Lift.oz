@@ -1,5 +1,6 @@
 \insert 'NewPortObject.oz'
-\insert 'ScheduleLast.oz'
+% \insert 'ScheduleLast.oz'
+\insert 'ScheduleSmart.oz'
 
 declare Lift
 
@@ -22,7 +23,7 @@ fun {Lift Num Init Cid Floors}
 	  of S|Sched2 then
 	     if NewPos == S then
 		{Wait {Send Floors.S arrive($)}}
-		if Sched2==nil then
+		if Sched2 == nil then
 		   state(NewPos nil false)
 		else
 		   {Send Cid step(Sched2.1)}
@@ -36,5 +37,3 @@ fun {Lift Num Init Cid Floors}
        end
     end}
 end
-
-	     
