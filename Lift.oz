@@ -31,22 +31,25 @@ in
 	  if NewPos == Next then
 	     Sched2 = {RemoveFirst Sched Moving}
 	     Next = {NextFrom Sched2 Moving}
+	     LeavingDirection 
 	  in
 	     {Wait {Send Floors.NewPos arrive(Num Moving $)}}
-	     if Next == nil then
-		NextR = {NextFrom Sched2 {ReverseMoving Moving}}
-	     in
-		{Browse 'Reversing to:'#NextR}
-		if NextR == nil then
-		   state(NewPos Sched2 notmoving)
-		else
-		   {Send Cid step(NextR)}
-		   state(NewPos Sched2 {ReverseMoving Moving})
-		end
-	     else
-		{Send Cid step(Next)}
-		state(NewPos Sched2 Moving)
-	     end
+	     LeavingDirection = if Next == nil then
+				   NextR = {NextFrom Sched2 {ReverseMoving Moving}}
+				in
+				   {Browse 'Reversing to:'#NextR}
+				   if NextR == nil then
+				      notmoving
+				   else
+				      {Send Cid step(NextR)}
+				      {ReverseMoving Moving}
+				   end
+				else
+				   {Send Cid step(Next)}
+				   Moving
+				end
+	     {Send Floors.NewPos leaving(LeavingDirection)}
+	     state(NewPos Sched2 LeavingDirection)
 	  else
 	     {Send Cid step(Next)}
 	     state(NewPos Sched Moving)

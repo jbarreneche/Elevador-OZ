@@ -1,5 +1,5 @@
 \insert 'NewPortObject2.oz'
-\insert 'Button.oz'
+\insert 'Buttons.oz'
 
 fun {Floor Num LSys Doors} Bs = {Buttons} in
    {NewPortObject2
@@ -8,6 +8,8 @@ fun {Floor Num LSys Doors} Bs = {Buttons} in
        of arrive(Lid Dir Ack) then
 	  {Browse 'Lift #Lid# arrived at floor'#Num}
 	  {Send Doors.Lid opendoor(Ack)}
+	  {Send Bs clear(Dir)}
+       [] leaving(Dir) then
 	  {Send Bs clear(Dir)}
        [] call(Dir) then
 	  {Browse 'Calling lift Direction: '#Dir}
