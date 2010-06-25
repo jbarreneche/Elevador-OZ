@@ -7,7 +7,7 @@ fun {Door Num Init Fid Lid} Tid = {AppendableTimer Did} Did in
 	     case Msg
 	     of opendoor(A) then
 		{Browse 'Opening door '#Num}
-		{Send Tid addtime(2000)}
+		{Send Tid addtime(200)}
 		A = Ack
 		state(true Ack)
 	     [] stoptimer then NAck in

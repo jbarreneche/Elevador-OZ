@@ -9,7 +9,7 @@ fun {LiftSystem Lifts}
        of call(Num Dir) then Lran in
 	  {Browse 'Floor '#Num#' calls a lift!'}
 	  Lran = Lifts.(1+{OS.rand} mod {Width Lifts})
-	  {Send Lran call(Num)}
+	  {Send Lran call(Num Dir)}
        end
     end}
 end
