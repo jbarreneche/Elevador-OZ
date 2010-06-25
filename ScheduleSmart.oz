@@ -20,7 +20,8 @@ in
       if Current.Dir == nil then
          if {IsEmpty Current}
          then smart(current:Future future:{EmptyPair})
-         else smart(current:Current future:Future)
+         else RDir = {Reverse Dir} in
+            smart(current:schedule(Dir:Future.Dir RDir:Current.RDir) future:schedule(Dir:nil RDir:Future.RDir))
          end
       else
          smart(current:{TailPair Current Dir} future:Future)
@@ -34,7 +35,7 @@ in
    end
 end
 
-fun {Reschedule smart(current:Current future:Future) CFloor CDir NFloor NDir}
+fun {Reschedule CSched=smart(current:Current future:Future) CFloor CDir NFloor NDir}
    fun{Add Pred List Value}
       case List
       of nil then [Value]
@@ -58,11 +59,17 @@ fun {Reschedule smart(current:Current future:Future) CFloor CDir NFloor NDir}
       else schedule(up:Up down:{DescendingAdd Down Floor})
       end
    end
+   % Retorno
 in
-   if (CDir == NDir) andthen {SameDirection CFloor NFloor NDir}
+   % {Browse 'Se va a reorganizar el Sched'#CSched}
+   % Retorno =
+   if {SameDirection CFloor NFloor CDir}
    then smart(current:{AddToSchedule Current NFloor NDir} future:Future)
    else smart(current:Current future:{AddToSchedule Future NFloor NDir})
    end
+   
+   % {Browse 'Se reorganizo el Sched'#Retorno}
+   % Retorno
 end
 
 % local S1 S2 S3 S4 in

@@ -19,10 +19,10 @@ fun {Controller Init} Tid={Timer} Cid in
 		   if F == Dest then
 		      state(stopped F Lid)
 		   elseif F < Dest then
-		      {Send Tid starttimer(1500 Cid)}
+		      {Send Tid starttimer(FloorTravelDelta Cid)}
 		      state(running F+1 Lid)
 		   else % F > Dest
-		      {Send Tid starttimer(1500 Cid)}
+		      {Send Tid starttimer(FloorTravelDelta Cid)}
 		      state(running F-1 Lid)
 		   end
 		end

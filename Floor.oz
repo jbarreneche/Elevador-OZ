@@ -2,17 +2,21 @@
 \insert 'Buttons.oz'
 
 fun {Floor Num LSys Doors} Bs = {Buttons} 
-   fun {UpdateHistory History Dir Initial} Result in
-      Result = call(dir:Dir time:({Property.get 'time.total'} - Initial)) | History
-      {Browse Result}
-      Result
+   fun {UpdateHistory History Dir Initial}
+      call(dir:Dir time:(({Property.get 'time.total'} - Initial) div 1000)) | History
+   end
+   fun {Reverse Dir}
+      case Dir
+      of up then down
+      [] down then up
+      else Dir end
    end
 in 
    {NewPortObject state(waiting(up:0 down:0) nil)
     fun {$ state(Waiting History) Msg}
        case Msg
        of arrive(Lid Dir Ack) then
-	  {Browse 'Lift #Lid# arrived at floor'#Num}
+	  {Browse 'Lift '#Lid#'arrived at floor'#Num}
 	  {Send Doors.Lid opendoor(Ack)}
 	  {Send Bs clear(Dir)}
           case Waiting
@@ -35,15 +39,25 @@ in
              else state(waiting(up:Up down:0) {UpdateHistory History Dir Down})
              end
           end
-       [] call(Dir) then
+       [] call(Dir) then 
 	  {Browse 'Calling lift Direction: '#Dir}
 	  {Send Bs press(Dir)}
           {Send LSys call(Num Dir)}
-          case Waiting
-          of waiting(up:0 down:D) andthen Dir == up then state(waiting(up:{Property.get 'time.total'} down:D) History)
-          [] waiting(up:U down:0) andthen Dir == down then state(waiting(up:U down:{Property.get 'time.total'}) History)
-          else state(Waiting History)
-          end
+
+          if Waiting.Dir == 0 then RDir = {Reverse Dir} in
+             state(waiting(Dir:{Property.get 'time.total'} RDir:Waiting.RDir) History)
+          else state(Waiting History) end
+                                
+          %case Waiting
+          %of waiting(up:0 down:D) andthen Dir == up then state(waiting(up:{Property.get 'time.total'} down:D) History)
+          %[] waiting(up:U down:0) andthen Dir == down then state(waiting(up:U down:{Property.get 'time.total'}) History)
+          %else state(Waiting History)
+          %end
+          
+       [] showHistory then
+          {Browse 'Floor'#Num#' History:'}
+          {Browse History}
+          state(Waiting History)
        end
     end}
 end
