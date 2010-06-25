@@ -37,6 +37,13 @@ in
                 state(Pos Sched2 SchedDir HistoryStack)
              end
 	  end
+       [] press(N) then
+          if N == Pos andthen SchedDir == NotMoving then
+	     {Wait {Send Floors.Pos arrive(Num SchedDir $)}}
+	     state(Pos Sched NotMoving HistoryStack)
+          else Dir = {MovingFromTo Pos N} in
+             state(Pos {Reschedule Sched Pos Dir N Dir} SchedDir HistoryStack)
+          end
        [] 'at'(CPos) then
           Moving = {MovingFromTo Pos CPos}
           NextM = {NextFrom Sched Moving}

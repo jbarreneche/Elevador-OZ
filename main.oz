@@ -1,6 +1,6 @@
 declare FloorTravelDelta = 4000 % Tiempo en ms que tarda el ascensor entre piso y piso
         DoorOpenTime = 500 % Tiempo en ms durante el cual permanecerán las puertas abiertas
-\insert 'Movement.oz'
+
 \insert 'Building.oz'
 
 local Floors Lifts in
@@ -22,7 +22,7 @@ local Floors Lifts in
    {Send Floors.7 call(MovingUp)}
    %%{Delay 1}
    %%{Send Floors.14 call(MovingUp)}
-   %% {Send Lifts.1 call(4)}
+   {Send Lifts.1 press(13)}
    
    {Browse 'Finishing messages sending!'}
    %% {Browse Floors.4}
