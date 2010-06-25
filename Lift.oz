@@ -1,21 +1,12 @@
 \insert 'NewPortObject.oz'
 \insert 'ScheduleSmart.oz'
+\insert 'Movement.oz'
 
 declare Lift
 
 fun {Lift Num Init Cid Floors}
-   fun {ReverseMoving Moving}
-      if Moving == notmoving then notmoving
-      elseif Moving == up then down
-      else up end
-   end
-   fun {MovingFromTo Origin Destination}
-      if Destination == nil then notmoving
-      elseif Origin < Destination then up
-      else down end
-   end
    fun {PrependHistory Pos Moving HistoryStack}
-       parada(piso:Pos dir:Moving) | HistoryStack
+       parada(piso:Pos dir:Moving.dir) | HistoryStack
    end
    proc {ShowFullHistory History}
       {Browse {List.reverse History $}}
@@ -29,17 +20,15 @@ in
        case Msg
        of call(N Dir) then
 	  {Browse 'Lift '#Num#' needed at floor '#N}
-	  if (N == Pos) andthen (SchedDir == notmoving) then
+	  if N == Pos andthen SchedDir == NotMoving then
 	     {Wait {Send Floors.Pos arrive(Num Dir $)}}
-	     state(Pos Sched notmoving HistoryStack)
+	     state(Pos Sched NotMoving HistoryStack)
 	  else Sched2 Moving in
-	     if SchedDir == notmoving
+	     if SchedDir == NotMoving
              then 
                 % En este caso no debería haber nada en schedule salvo lo que llegó
                 {Send Cid step(N)}
-                {Browse Sched}
                 Sched2 = {Reschedule Sched Pos {MovingFromTo Pos N} N Dir}
-                {Browse Sched2}
                 % NSched = {RemoveFirst Sched2 Dir}
                 state(Pos Sched2 Dir HistoryStack)
              else
@@ -69,24 +58,24 @@ in
                 NPos = {NextFrom NSched NSchedDir}
              else
                 NSched = {RemoveFirst USched Moving}
-                if {NextFrom NSched {ReverseMoving Moving}} \= nil then
-                   NSchedDir = {ReverseMoving Moving}
+                if {NextFrom NSched Moving.reverse} \= nil then
+                   NSchedDir = Moving.reverse
                    NPos = {NextFrom NSched NSchedDir}
                 elseif {NextFrom NSched Moving} \= nil then
                    NSchedDir = SchedDir
                    NPos = {NextFrom NSched NSchedDir}
                 else
-                   NSchedDir = notmoving
+                   NSchedDir = NotMoving
                    NPos = nil
                 end
              end
 
              NMoving = {MovingFromTo CPos NPos}
-             if NMoving \= notmoving then {Send Cid step(NPos)} end
+             if NMoving \= NotMoving then {Send Cid step(NPos)} end
 
 	     {Send Floors.CPos leaving(NMoving)}
              UpdatedHistoryStack = {PrependHistory CPos NMoving HistoryStack}
-             if NMoving == notmoving then
+             if NMoving == NotMoving then
                 {ShowFullHistory UpdatedHistoryStack}
              end
 	     state(CPos NSched NSchedDir UpdatedHistoryStack)
@@ -103,17 +92,17 @@ in
                 NSchedDir = Moving
              else
                 NPos = nil
-                NSchedDir = notmoving
+                NSchedDir = NotMoving
              end
 
              NMoving = {MovingFromTo CPos NPos}
 	     {Send Floors.CPos leaving(NMoving)}
 
-             if NMoving \= notmoving then {Send Cid step(NPos)} end
+             if NMoving \= NotMoving then {Send Cid step(NPos)} end
 	     {Send Floors.CPos leaving(NMoving)}
              UpdatedHistoryStack = {PrependHistory CPos NMoving HistoryStack}
-             if NMoving == notmoving then
-                {Browse {List.reverse UpdatedHistoryStack $}}
+             if NMoving == NotMoving then
+                {ShowFullHistory UpdatedHistoryStack}
              end
 	     state(CPos NSched NSchedDir UpdatedHistoryStack)
 	  else

@@ -1,6 +1,6 @@
 declare FloorTravelDelta = 4000 % Tiempo en ms que tarda el ascensor entre piso y piso
         DoorOpenTime = 500 % Tiempo en ms durante el cual permanecerán las puertas abiertas
-
+\insert 'Movement.oz'
 \insert 'Building.oz'
 
 local Floors Lifts in
@@ -8,20 +8,20 @@ local Floors Lifts in
    {Browse 'Starting!!!'}
    
    {Building 20 1 Floors Lifts}
-   {Send Floors.15 call(down)}
+   {Send Floors.15 call(MovingDown)}
    {Delay 2000}
-   %%{Send Floors.4 call(up)}
+   %%{Send Floors.4 call(MovingUp)}
    %%{Delay 1}
-   %%{Send Floors.11 call(down)}
+   %%{Send Floors.11 call(MovingDown)}
    %%{Delay 1}
-   %%{Send Floors.12 call(down)}
+   %%{Send Floors.12 call(MovingDown)}
    %%{Delay 1}
-   {Send Floors.12 call(up)}
-   {Send Floors.18 call(up)}
-   {Send Floors.2 call(down)}
-   {Send Floors.7 call(up)}
+   {Send Floors.12 call(MovingUp)}
+   {Send Floors.18 call(MovingUp)}
+   {Send Floors.2 call(MovingDown)}
+   {Send Floors.7 call(MovingUp)}
    %%{Delay 1}
-   %%{Send Floors.14 call(up)}
+   %%{Send Floors.14 call(MovingUp)}
    %% {Send Lifts.1 call(4)}
    
    {Browse 'Finishing messages sending!'}
@@ -44,3 +44,10 @@ end
 %%   end
 %%end
       
+%{Browse s(1 2)}
+%local A = s(1) in
+%   case A
+%   of C = _(S) then {Browse 'yaho!'}
+%   else {Browse 'bummer...'}
+%   end
+%end

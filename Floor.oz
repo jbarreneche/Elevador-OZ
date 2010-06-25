@@ -3,13 +3,7 @@
 
 fun {Floor Num LSys Doors} Bs = {Buttons} 
    fun {UpdateHistory History Dir Initial}
-      call(dir:Dir time:(({Property.get 'time.total'} - Initial) div 1000)) | History
-   end
-   fun {Reverse Dir}
-      case Dir
-      of up then down
-      [] down then up
-      else Dir end
+      call(dir:Dir.dir time:(({Property.get 'time.total'} - Initial) div 1000)) | History
    end
 in 
    {NewPortObject state(waiting(up:0 down:0) nil)
@@ -20,10 +14,10 @@ in
 	  {Send Doors.Lid opendoor(Ack)}
 	  {Send Bs clear(Dir)}
           case Waiting
-          of waiting(up:0 down:_) andthen Dir == up then state(Waiting History)
-          [] waiting(up:_ down:0) andthen Dir == down then state(Waiting History)
+          of waiting(up:0 down:_) andthen Dir == MovingUp then state(Waiting History)
+          [] waiting(up:_ down:0) andthen Dir == MovingDown then state(Waiting History)
           [] waiting(up:Up down:Down) then
-             if Dir == up
+             if Dir == MovingUp
              then state(waiting(up:0 down:Down) {UpdateHistory History Dir Up})
              else state(waiting(up:Up down:0) {UpdateHistory History Dir Down})
              end
@@ -39,24 +33,17 @@ in
              else state(waiting(up:Up down:0) {UpdateHistory History Dir Down})
              end
           end
-       [] call(Dir) then 
-	  {Browse 'Calling lift Direction: '#Dir}
+       [] call(Dir) then CDir = Dir.dir RDir = Dir.reverse.dir in
+	  {Browse 'Calling lift Direction: '#CDir}
 	  {Send Bs press(Dir)}
           {Send LSys call(Num Dir)}
 
-          if Waiting.Dir == 0 then RDir = {Reverse Dir} in
-             state(waiting(Dir:{Property.get 'time.total'} RDir:Waiting.RDir) History)
+          if Waiting.CDir == 0
+          then state(waiting(CDir:{Property.get 'time.total'} RDir:Waiting.RDir) History)
           else state(Waiting History) end
                                 
-          %case Waiting
-          %of waiting(up:0 down:D) andthen Dir == up then state(waiting(up:{Property.get 'time.total'} down:D) History)
-          %[] waiting(up:U down:0) andthen Dir == down then state(waiting(up:U down:{Property.get 'time.total'}) History)
-          %else state(Waiting History)
-          %end
-          
        [] showHistory then
-          {Browse 'Floor'#Num#' History:'}
-          {Browse History}
+          {Browse 'Floor'#Num#' History:'#History}
           state(Waiting History)
        end
     end}

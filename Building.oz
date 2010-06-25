@@ -8,7 +8,7 @@ declare Building
 proc {Building FN LN ?Floors ?Lifts} LSys = {LiftSystem Lifts} in
    Lifts = {MakeTuple lifts LN}
    for I in 1..LN do Cid in
-      Lifts.I = {LiftShaft I state(10 {EmptySchedule} notmoving) Floors}
+      Lifts.I = {LiftShaft I state(10 {EmptySchedule} NotMoving) Floors}
    end
    Floors = {MakeTuple floors FN}
    for I in 1..FN do Doors = {MakeTuple doors LN} in
