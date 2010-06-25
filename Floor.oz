@@ -3,7 +3,12 @@
 
 fun {Floor Num LSys Doors} Bs = {Buttons} 
    fun {UpdateHistory History Dir Initial}
-      call(dir:Dir.dir time:(({Property.get 'time.total'} - Initial) div 1000)) | History
+      call(dir:Dir time:(({Property.get 'time.total'} - Initial) div 1000)) | History
+   end
+   fun {EndWait Dir Waiting History} CDir = Dir.dir RDir = Dir.reverse.dir in
+      if Waiting.CDir == 0 then state(Waiting History)
+      else state(waiting(CDir:0 RDir:Waiting.RDir) {UpdateHistory History CDir Waiting.CDir})
+      end
    end
 in 
    {NewPortObject state(waiting(up:0 down:0) nil)
@@ -13,26 +18,10 @@ in
 	  {Browse 'Lift '#Lid#'arrived at floor'#Num}
 	  {Send Doors.Lid opendoor(Ack)}
 	  {Send Bs clear(Dir)}
-          case Waiting
-          of waiting(up:0 down:_) andthen Dir == MovingUp then state(Waiting History)
-          [] waiting(up:_ down:0) andthen Dir == MovingDown then state(Waiting History)
-          [] waiting(up:Up down:Down) then
-             if Dir == MovingUp
-             then state(waiting(up:0 down:Down) {UpdateHistory History Dir Up})
-             else state(waiting(up:Up down:0) {UpdateHistory History Dir Down})
-             end
-          end
+          {EndWait Dir Waiting History}
        [] leaving(Dir) then
 	  {Send Bs clear(Dir)}
-          case Waiting
-          of waiting(up:0 down:_) andthen Dir == up then state(Waiting History)
-          [] waiting(up:_ down:0) andthen Dir == down then state(Waiting History)
-          [] waiting(up:Up down:Down) then
-             if Dir == up
-             then state(waiting(up:0 down:Down) {UpdateHistory History Dir Up})
-             else state(waiting(up:Up down:0) {UpdateHistory History Dir Down})
-             end
-          end
+          {EndWait Dir Waiting History}
        [] call(Dir) then CDir = Dir.dir RDir = Dir.reverse.dir in
 	  {Browse 'Calling lift Direction: '#CDir}
 	  {Send Bs press(Dir)}
