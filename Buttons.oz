@@ -15,5 +15,3 @@ fun {Buttons}
        end
     end}
 end
-
-% {Browse buttons(up:false down:false)}

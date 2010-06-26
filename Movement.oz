@@ -8,9 +8,3 @@ fun {MovingFromTo From To}
    elseif To > From then MovingUp
    else MovingDown end
 end
-
-% {Browse MovingUp == MovingDown.reverse}
-% {Browse MovingUp \= MovingDown}
-% {Browse MovingUp \= NotMoving}
-% {Browse MovingDown.reverse.dir}
-% {Browse NotMoving.reverse.dir}
