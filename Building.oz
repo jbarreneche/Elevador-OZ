@@ -12,8 +12,8 @@ proc {Building FN LN ?Floors ?Lifts} LSys = {LiftSystem Lifts} in
    end
    Floors = {MakeTuple floors FN}
    for I in 1..FN do Doors = {MakeTuple doors LN} in
-      for J in 1..LN do Ack in
-	 Doors.J = {Door J state(false Ack) Floors.I Lifts.J}
+      for J in 1..LN do
+	 Doors.J = {Door J state(false) Floors.I Lifts.J}
       end  
       Floors.I = {Floor I LSys Doors}
    end

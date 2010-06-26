@@ -14,9 +14,9 @@ in
    {NewPortObject state(waiting(up:0 down:0) nil)
     fun {$ state(Waiting History) Msg}
        case Msg
-       of arrive(Lid Dir Ack) then
+       of arrive(Lid Dir) then
 	  {Browse 'Lift '#Lid#'arrived at floor'#Num}
-	  {Send Doors.Lid opendoor(Ack)}
+	  {Send Doors.Lid opendoor}
 	  {Send Bs clear(Dir)}
           {EndWait Dir Waiting History}
        [] leaving(Dir) then

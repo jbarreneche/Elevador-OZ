@@ -4,9 +4,9 @@
 
 declare Lift
 
-fun {Lift Num Init Cid Floors}
-   fun {PrependHistory Pos Moving HistoryStack}
-       parada(piso:Pos dir:Moving.dir) | HistoryStack
+fun {Lift Lid Init Cid Floors}
+   fun {PrependHistory Pos Moving History}
+       parada(piso:Pos dir:Moving.dir) | History
    end
    proc {ShowFullHistory History}
       {Browse {List.reverse History $}}
@@ -16,107 +16,92 @@ fun {Lift Num Init Cid Floors}
    end
 in
    {NewPortObject Init
-    fun {$ state(Pos Sched SchedDir HistoryStack) Msg}
+    fun {$ state(Pos Sched SchedDir History) Msg}
        case Msg
-       of call(N Dir) then
-	  {Browse 'Lift '#Num#' needed at floor '#N}
-	  if N == Pos andthen SchedDir == NotMoving then
-	     {Wait {Send Floors.Pos arrive(Num Dir $)}}
-	     state(Pos Sched NotMoving HistoryStack)
+       of call(FNum CallDir) then
+	  {Browse 'Lift '#Lid#' needed at floor '#FNum}
+	  if FNum == Pos andthen SchedDir == NotMoving then
+	     {Wait {Send Floors.Pos arrive(Lid CallDir $)}}
+	     state(Pos Sched NotMoving History)
 	  else Sched2 Moving in
 	     if SchedDir == NotMoving
              then 
                 % En este caso no debería haber nada en schedule salvo lo que llegó
-                {Send Cid step(N)}
-                Sched2 = {Reschedule Sched Pos {MovingFromTo Pos N} N Dir}
-                % NSched = {RemoveFirst Sched2 Dir}
-                state(Pos Sched2 Dir HistoryStack)
+                {Send Cid step(FNum)}
+                Sched2 = {Reschedule Sched Pos {MovingFromTo Pos FNum} FNum CallDir}
+                state(Pos Sched2 CallDir History)
              else
                 Moving = {MovingFromTo Pos {NextFrom Sched SchedDir}}
-                Sched2 = {Reschedule Sched Pos Moving N Dir}
-                state(Pos Sched2 SchedDir HistoryStack)
+                Sched2 = {Reschedule Sched Pos Moving FNum CallDir}
+                state(Pos Sched2 SchedDir History)
              end
 	  end
-       [] press(N) then
-          if N == Pos andthen SchedDir == NotMoving then
-	     {Wait {Send Floors.Pos arrive(Num SchedDir $)}}
-	     state(Pos Sched NotMoving HistoryStack)
-          else Dir = {MovingFromTo Pos N} in
-             state(Pos {Reschedule Sched Pos Dir N Dir} SchedDir HistoryStack)
+       [] press(FNum) then
+          if FNum == Pos andthen SchedDir == NotMoving then
+	     {Wait {Send Floors.Pos arrive(Lid SchedDir $)}}
+	     state(Pos Sched NotMoving History)
+          else Dir = {MovingFromTo Pos FNum} in
+             state(Pos {Reschedule Sched Pos Dir FNum Dir} SchedDir History)
           end
        [] 'at'(CPos) then
-          Moving = {MovingFromTo Pos CPos}
-          NextM = {NextFrom Sched Moving}
-          NextS = {NextFrom Sched SchedDir}
-          UpdatedHistoryStack
+          MDir = {MovingFromTo Pos CPos}
+          SDir = SchedDir
+          MFloor = {NextFrom Sched MDir}
+          SFloor = {NextFrom Sched SDir}
+          RFloor = {NextFrom Sched MDir.reverse}
        in
-	  {Browse 'Lift '#Num#' at floor '#CPos}
-          case CPos
-	  of !NextM then
-	     USched = {RemoveFirst Sched Moving}
-             NSched NPos  NMoving NSchedDir
-	  in
-             {Browse 'Arrived au correct!'#CPos#' '#NextM}
-	     {Wait {Send Floors.CPos arrive(Num SchedDir $)}}
+	  {Browse 'Lift '#Lid#' at floor '#CPos}
+          case MFloor
+          of !CPos then NSched = {RemoveFirst Sched MDir} in
+             {Browse 'Arrived au correct!'#NSched}
+             {Send Floors.CPos arrive(Lid MDir)}
+             state(CPos NSched MDir#SDir {PrependHistory CPos MDir History})
+          [] nil then % Si no tengo ninguno en la posición que me muevo sigo con los planes de Schedule
+             case SFloor
+             of !CPos then NSched = {RemoveFirst Sched MDir} in
+                {Browse 'Arrived au reverse!'}
+                {Send Floors.CPos arrive(Lid SDir)}
+                state(CPos NSched MDir#SDir {PrependHistory CPos SDir History})
+             else % Recordemos que SFloor no puede ser nil, porque si llegué a un piso es que hay un pedido en la dirección de Schedule
+                {Send Cid step(SFloor)}
+                state(CPos Sched SchedDir History)
+             end
+          else % Hay alguno en la dirección que me muevo pero no es en el que estoy
+             {Send Cid step(MFloor)}
+             state(CPos Sched SchedDir History)
+          end
+       [] dismiss then
+          MDir#SDir = SchedDir
+          MFloor = {NextFrom Sched MDir}
+          SFloor = {NextFrom Sched SDir}
+       in
+          case MFloor
+          of !Pos then
+             % La posición actual sigue siendo una del recorrido (a.k.a. presionaron el botón del mismo piso)
+             {Send Floors.Pos arrive(Lid MDir)}
+             state(Pos {RemoveFirst Sched MDir} SchedDir {PrependHistory Pos MDir History})
+          [] nil then
+             NSched = {RemoveFirst Sched MDir}
+             RFloor = {NextFrom NSched MDir.reverse}
+             MFloor = {NextFrom NSched MDir}
+          in
+             % Me estaba moviendo en una dirección y no quedan mas en dicha dirección
+             if RFloor \= nil then % Encuentro un pedido en la dirección reversa
+                {Send Cid step(RFloor)}
+                state(Pos NSched MDir.reverse History)
+             elseif MFloor \= nil then % Encuentro un pedido en la misma dirección pero que se encuentra a contramano
+                {Send Cid step(MFloor)}
+                state(Pos NSched MDir History)
+             else % Ok, no encontré nada mas...
+                {ShowFullHistory History}
+                state(Pos Sched NotMoving History)
+             end
+          else
+             % Si tengo algo en la dirección que me muevo, continúo con mis planes de movimiento
+             {Send Cid step(SFloor)}
+             state(Pos Sched SDir History)
+          end
              
-             if {NextFrom USched Moving} \= nil then
-                NSchedDir = Moving
-                NSched = USched
-                NPos = {NextFrom NSched NSchedDir}
-             else
-                NSched = {RemoveFirst USched Moving}
-                if {NextFrom NSched Moving.reverse} \= nil then
-                   NSchedDir = Moving.reverse
-                   NPos = {NextFrom NSched NSchedDir}
-                elseif {NextFrom NSched Moving} \= nil then
-                   NSchedDir = SchedDir
-                   NPos = {NextFrom NSched NSchedDir}
-                else
-                   NSchedDir = NotMoving
-                   NPos = nil
-                end
-             end
-
-             NMoving = {MovingFromTo CPos NPos}
-             if NMoving \= NotMoving then {Send Cid step(NPos)} end
-
-	     {Send Floors.CPos leaving(NMoving)}
-             UpdatedHistoryStack = {PrependHistory CPos NMoving HistoryStack}
-             if NMoving == NotMoving then
-                {ShowFullHistory UpdatedHistoryStack}
-             end
-	     state(CPos NSched NSchedDir UpdatedHistoryStack)
-
-          %% Si ocurre esto, seguro que Moving \= SchedDir
-          [] !NextS then NSched = {RemoveFirst Sched SchedDir} NPos NSchedDir NMoving UpdatedHistoryStack in
-             {Browse 'Arrived au contraire'}
-	     {Wait {Send Floors.CPos arrive(Num NSchedDir $)}}
-             if {NextFrom NSched SchedDir} \= nil then
-                NPos = {NextFrom NSched SchedDir}
-                NSchedDir = SchedDir
-             elseif {NextFrom NSched Moving} \= nil then
-                NPos = {NextFrom NSched Moving}
-                NSchedDir = Moving
-             else
-                NPos = nil
-                NSchedDir = NotMoving
-             end
-
-             NMoving = {MovingFromTo CPos NPos}
-	     {Send Floors.CPos leaving(NMoving)}
-
-             if NMoving \= NotMoving then {Send Cid step(NPos)} end
-	     {Send Floors.CPos leaving(NMoving)}
-             UpdatedHistoryStack = {PrependHistory CPos NMoving HistoryStack}
-             if NMoving == NotMoving then
-                {ShowFullHistory UpdatedHistoryStack}
-             end
-	     state(CPos NSched NSchedDir UpdatedHistoryStack)
-	  else
-             {Browse 'Ok, No one wants me here...'#Sched}
-	     {Send Cid step(NextS)}
-	     state(CPos Sched SchedDir HistoryStack)
-	  end
        end
     end}
-end
+end          

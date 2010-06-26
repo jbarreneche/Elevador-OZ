@@ -3,17 +3,16 @@
 declare Door
 fun {Door Num Init Fid Lid} Tid = {AppendableTimer Did} Did in
    Did = {NewPortObject Init
-	  fun {$ state(Opened Ack) Msg}
+	  fun {$ state(Opened) Msg}
 	     case Msg
-	     of opendoor(A) then
+	     of opendoor then
 		{Browse 'Opening door '#Num}
 		{Send Tid addtime(DoorOpenTime)}
-		A = Ack
-		state(true Ack)
-	     [] stoptimer then NAck in
+		state(true)
+	     [] stoptimer then
 		{Browse 'Closing doors'}
-		Ack = unit
-		state(false NAck)
+                {Send Lid dismiss}
+		state(false)
 	     end
 	  end}
 end

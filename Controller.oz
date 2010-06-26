@@ -17,6 +17,7 @@ fun {Controller Init} Tid={Timer} Cid in
 		case Msg
 		of step(Dest) then
 		   if F == Dest then
+                      {Send Lid 'at'(F)}
 		      state(stopped F Lid)
 		   elseif F < Dest then
 		      {Send Tid starttimer(FloorTravelDelta Cid)}
